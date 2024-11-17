@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 from doordash_challenge.functions.data_processing.Cleaner import DataCleaner
 from doordash_challenge.functions.data_processing.Cleaner import STORE_COLUMN, \
-    DATE_COLUMN, DELIVERY_COLUMN, STORE_COLUMNS, ORDER_PLACE_DURATION_COLUMN, STORE_CLIENT_DURATION_COLUMN, \
+    DATE_COLUMN, DELIVERY_COLUMN, ORDER_PLACE_DURATION_COLUMN, STORE_CLIENT_DURATION_COLUMN, \
     SUBTOTAL_COLUMN, TOTAL_DASHERS_COLUMN, BUSY_DASHERS_COLUMN, AVAILABLE_DASHERS_COLUMN, TOTAL_ORDERS
 
 
