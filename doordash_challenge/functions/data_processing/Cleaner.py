@@ -12,7 +12,7 @@ TOTAL_DASHERS_COLUMN = 'total_onshift_dashers'
 BUSY_DASHERS_COLUMN = 'total_busy_dashers'
 AVAILABLE_DASHERS_COLUMN = 'availabe_dashers_onshift'
 TOTAL_ORDERS = 'total_outstanding_orders'
-
+logging.basicConfig(level=logging.INFO)
 class DataCleaner:
     @staticmethod
     def add_temporal_variables(data: pd.DataFrame):
@@ -36,5 +36,5 @@ class DataCleaner:
                 return 'Night'
 
         data['time_of_day'] = data.apply(lambda row: categorize_time_of_day(row['hour']), axis=1)
-        logging.info(f''' Date variables added, a total of {data.shape[0]} rows processed ''')
+        logging.info(f''' Date variables added, a total of {data.shape[0]} rows processed.''')
         return data
