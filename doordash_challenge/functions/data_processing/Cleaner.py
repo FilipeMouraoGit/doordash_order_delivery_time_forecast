@@ -62,3 +62,24 @@ class DataCleaner:
             f''' hours threshold.'''
         )
         return data_filtered
+
+    @staticmethod
+    def remove_negative_values(data: pd.DataFrame):
+        """
+            From the total dashers, busy dashers, subtotal of the order and total outstanding orders columns,:
+            - Remove all the rows with negative values for total dashers, subtotal and total orders outstanding;
+            - Calculate the available dashers in the region;
+            - Clip the available dashers to 0 (do not allow negative values) and remove the busy dashers columns;
+        """
+        numeric_columns = [SUBTOTAL_COLUMN, TOTAL_DASHERS_COLUMN, BUSY_DASHERS_COLUMN, TOTAL_ORDERS]
+        data_filtered = data.copy()
+        data_filtered = data_filtered.loc[~(data_filtered[numeric_columns] < 0).any(axis=1)]
+        data_filtered[AVAILABLE_DASHERS_COLUMN] = \
+            (data_filtered[TOTAL_DASHERS_COLUMN] - data_filtered[BUSY_DASHERS_COLUMN]).clip(lower=0)
+        data_filtered = data_filtered.drop(BUSY_DASHERS_COLUMN, axis=1)
+        logging.info(
+            f'''Negative values removed.\nA total of {data.shape[0]} rows processed and '''
+            f'''{data.shape[0] - data_filtered.shape[0]} rows removed due to not allowed negative values for columns'''
+            f''' ({SUBTOTAL_COLUMN}, {TOTAL_DASHERS_COLUMN}, {BUSY_DASHERS_COLUMN}, {BUSY_DASHERS_COLUMN})'''
+        )
+        return data_filtered

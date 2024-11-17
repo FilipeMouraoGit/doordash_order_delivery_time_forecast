@@ -62,3 +62,20 @@ class FirstTest(unittest.TestCase):
         df_returned = DataCleaner.add_target_variables(df_data)
         df_returned = df_returned.reset_index(drop=True)
         pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test_remove_negative_values(self):
+        df_data = pd.DataFrame({
+            TOTAL_DASHERS_COLUMN: [1, -1,  3, 6, 9, 4, 4, 2, 2, 20],
+            BUSY_DASHERS_COLUMN:  [1,  2, -1, 4, 5, 5, 9, 9, 1, 10],
+            SUBTOTAL_COLUMN: [1, 2, 3, -1, 5, 6, 7, 8, 9, 10],
+            TOTAL_ORDERS: [1, 2, 3, 4, -1, 6, 7, 8, 9, 10]
+        })
+        df_expected = pd.DataFrame({
+            TOTAL_DASHERS_COLUMN: [1, 4, 4, 2, 2, 20],
+            SUBTOTAL_COLUMN: [1, 6, 7, 8, 9, 10],
+            TOTAL_ORDERS: [1, 6, 7, 8, 9, 10],
+            AVAILABLE_DASHERS_COLUMN: [0, 0, 0, 0, 1, 10]
+        })
+        df_returned = DataCleaner.remove_negative_values(df_data)
+        df_returned = df_returned.reset_index(drop=True)
+        pd.testing.assert_frame_equal(df_expected, df_returned)
