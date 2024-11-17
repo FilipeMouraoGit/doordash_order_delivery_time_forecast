@@ -1,10 +1,9 @@
 import unittest
 import pandas as pd
 from doordash_challenge.functions.data_processing.Cleaner import DataCleaner
-from doordash_challenge.functions.data_processing.Cleaner import STORE_COLUMN, \
+from doordash_challenge.functions.data_processing.Cleaner import MARKET_ID_COLUMN, STORE_CATEGORY, STORE_COLUMN, \
     DATE_COLUMN, DELIVERY_COLUMN, ORDER_PLACE_DURATION_COLUMN, STORE_CLIENT_DURATION_COLUMN, \
     SUBTOTAL_COLUMN, TOTAL_DASHERS_COLUMN, BUSY_DASHERS_COLUMN, AVAILABLE_DASHERS_COLUMN, TOTAL_ORDERS
-
 
 class FirstTest(unittest.TestCase):
 
@@ -78,5 +77,29 @@ class FirstTest(unittest.TestCase):
             AVAILABLE_DASHERS_COLUMN: [0, 0, 0, 0, 1, 10]
         })
         df_returned = DataCleaner.remove_negative_values(df_data)
+        df_returned = df_returned.reset_index(drop=True)
+        pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test_clean_conflict_category(self):
+        df_data = pd.DataFrame({
+            STORE_COLUMN: ['1', '1', '1', '1', '1', '2', '2', '2', '3', '3', '3'],
+            MARKET_ID_COLUMN:  ['1', '1', '1', '2', '2', '1', '2', '2', '1', '2', '3'],
+            STORE_CATEGORY: ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'a', 'b', 'd'],
+            DATE_COLUMN: [
+                '2024-10-23', '2024-11-01', '2024-11-05', '2024-11-07',  '2024-11-07',
+                '2024-11-11', '2024-11-13', '2024-11-15', '2024-11-16', '2024-11-17', '2024-10-18']
+        })
+        df_data[DATE_COLUMN] = pd.to_datetime(df_data[DATE_COLUMN])
+        df_expected = pd.DataFrame({
+            STORE_COLUMN: ['1', '1', '1', '1', '1', '2', '2', '2', '3', '3', '3'],
+            DATE_COLUMN: [
+                '2024-10-23', '2024-11-01', '2024-11-05', '2024-11-07', '2024-11-07',
+                '2024-11-11', '2024-11-13', '2024-11-15', '2024-11-16', '2024-11-17', '2024-10-18'],
+            MARKET_ID_COLUMN:  ['1', '1', '1', '1', '1', '2', '2', '2', '3', '3', '3'],
+            STORE_CATEGORY: ['a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'd', 'd', 'd']
+
+        })
+        df_expected[DATE_COLUMN] = pd.to_datetime(df_expected[DATE_COLUMN])
+        df_returned = DataCleaner.clean_conflict_category(df_data)
         df_returned = df_returned.reset_index(drop=True)
         pd.testing.assert_frame_equal(df_expected, df_returned)
