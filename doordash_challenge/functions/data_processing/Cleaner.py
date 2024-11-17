@@ -19,7 +19,9 @@ class DataCleaner:
     @staticmethod
     def add_temporal_variables(data: pd.DataFrame):
         """
-        From a date column, extract the weekday, hour, time_of_day and weekend
+        From the date column:
+         - Extract the week, weekday, hour and a boolean if it is a weekend or not;
+         - Based on the hour value estimate the period of the day when the order request was made;
         """
         # temporal variables
         data['week'] = data[DATE_COLUMN].dt.isocalendar().week.astype(int)
@@ -44,7 +46,11 @@ class DataCleaner:
     @staticmethod
     def add_target_variables(data: pd.DataFrame, delivery_threshold=3):
         """
-        From a date column, extract the weekday, hour, time_of_day and weekedn
+        From the date, delivery, estimated order preparation time, and estimated delivery time column:
+            - Calculate the delivery time estimation from the other models;
+            - Calculate the real delivery time in seconds and hours;
+            - Remove the rows with delivery time greater than the allowed threshold;
+            - Return the filtered df
         """
         data['estimated_delivery_time'] = data[ORDER_PLACE_DURATION_COLUMN] + data[STORE_CLIENT_DURATION_COLUMN]
         data['delivery_time'] = (data[DELIVERY_COLUMN] - data[DATE_COLUMN]) / pd.Timedelta(seconds=1)
