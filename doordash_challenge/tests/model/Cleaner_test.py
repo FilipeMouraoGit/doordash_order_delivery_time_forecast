@@ -29,3 +29,36 @@ class FirstTest(unittest.TestCase):
             df_expected[column] = df_expected[column].astype(int)
         df_returned = DataCleaner.add_temporal_variables(df_data)
         pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test_add_target_variables(self):
+        df_data = pd.DataFrame({
+            DATE_COLUMN: [
+                '2024-10-23 05:35:11', '2024-11-01 04:22:01', '2024-11-05 11:25:14', '2024-11-07 15:31:57',
+                '2024-11-11 17:45:47', '2024-11-13 19:45:41', '2024-11-15 21:35:11', '2024-11-16 01:27:11'],
+            DELIVERY_COLUMN: [
+                '2024-10-23 05:55:11', '2024-11-01 08:22:01', '2024-11-05 11:28:14', '2024-11-07 16:01:57',
+                '2024-11-11 19:45:47', '2024-11-13 22:15:41', '2024-11-16 00:35:11', '2024-11-16 04:27:12'],
+            ORDER_PLACE_DURATION_COLUMN: [600, 500, 100, 500, 1200, 700, 100, 200],
+            STORE_CLIENT_DURATION_COLUMN: [300, 1000, 400, 600, 1500, 900, 50, 300]
+        })
+        df_data[DATE_COLUMN] = pd.to_datetime(df_data[DATE_COLUMN])
+        df_data[DELIVERY_COLUMN] = pd.to_datetime(df_data[DELIVERY_COLUMN])
+
+        df_expected = pd.DataFrame({
+            DATE_COLUMN: [
+                '2024-10-23 05:35:11',  '2024-11-05 11:25:14', '2024-11-07 15:31:57', '2024-11-11 17:45:47',
+                '2024-11-13 19:45:41', '2024-11-15 21:35:11'],
+            DELIVERY_COLUMN: [
+                '2024-10-23 05:55:11',  '2024-11-05 11:28:14', '2024-11-07 16:01:57', '2024-11-11 19:45:47',
+                '2024-11-13 22:15:41', '2024-11-16 00:35:11'],
+            ORDER_PLACE_DURATION_COLUMN: [600, 100, 500, 1200, 700, 100],
+            STORE_CLIENT_DURATION_COLUMN: [300, 400, 600, 1500, 900, 50],
+            'estimated_delivery_time': [900, 500, 1100, 2700, 1600, 150],
+            'delivery_time': [20*60, 3*60, 30*60, 2*60*60, 2.5*60*60, 3*60*60],
+            'delivery_time_hours': [1/3, 1/20, 0.5, 2, 2.5, 3],
+        })
+        df_expected[DATE_COLUMN] = pd.to_datetime(df_expected[DATE_COLUMN])
+        df_expected[DELIVERY_COLUMN] = pd.to_datetime(df_expected[DELIVERY_COLUMN])
+        df_returned = DataCleaner.add_target_variables(df_data)
+        df_returned = df_returned.reset_index(drop=True)
+        pd.testing.assert_frame_equal(df_expected, df_returned)
