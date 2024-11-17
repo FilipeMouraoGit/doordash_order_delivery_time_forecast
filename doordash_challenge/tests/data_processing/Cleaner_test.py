@@ -28,6 +28,7 @@ class FirstTest(unittest.TestCase):
         for column in ['week', 'weekend', 'hour']:
             df_expected[column] = df_expected[column].astype(int)
         df_returned = DataCleaner.add_temporal_variables(df_data)
+        df_returned['hour'] = df_returned['hour'].astype(int)
         pd.testing.assert_frame_equal(df_expected, df_returned)
 
     def test_add_target_variables(self):
