@@ -16,6 +16,15 @@ TOTAL_DASHERS_COLUMN = 'total_onshift_dashers'
 BUSY_DASHERS_COLUMN = 'total_busy_dashers'
 AVAILABLE_DASHERS_COLUMN = 'availabe_dashers_onshift'
 TOTAL_ORDERS = 'total_outstanding_orders'
+WEEK_COLUMN = 'week'
+WEEKDAY_COLUMN = 'weekday'
+WEEKEND_COLUMN = 'weekend'
+HOUR_COLUMN = 'hour'
+TIME_OF_DAY_COLUMN = 'time_of_day'
+ESTIMATED_DELIVERY_COLUMN = 'estimated_delivery_time'
+DELIVERY_TIME_SECONDS_COLUMN = 'delivery_time'
+DELIVERY_TIME_HOURS_COLUMN = 'delivery_time_hours'
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -28,10 +37,10 @@ class DataCleaner:
          - Based on the hour value estimate the period of the day when the order request was made;
         """
         # temporal variables
-        data['week'] = data[DATE_COLUMN].dt.isocalendar().week.astype(int)
-        data['weekday'] = data[DATE_COLUMN].dt.day_name()
-        data["weekend"] = (data[DATE_COLUMN].dt.weekday > 4).astype(int)
-        data['hour'] = data[DATE_COLUMN].dt.hour
+        data[WEEK_COLUMN] = data[DATE_COLUMN].dt.isocalendar().week.astype(int)
+        data[WEEKDAY_COLUMN] = data[DATE_COLUMN].dt.day_name()
+        data[WEEKEND_COLUMN] = (data[DATE_COLUMN].dt.weekday > 4).astype(int)
+        data[HOUR_COLUMN] = data[DATE_COLUMN].dt.hour
 
         def categorize_time_of_day(hour):
             if 5 <= hour < 12:
@@ -43,7 +52,7 @@ class DataCleaner:
             else:  # Above 21 or below 5
                 return 'Night'
 
-        data['time_of_day'] = data.apply(lambda row: categorize_time_of_day(row['hour']), axis=1)
+        data[TIME_OF_DAY_COLUMN] = data.apply(lambda row: categorize_time_of_day(row['hour']), axis=1)
         logging.info(f'''Date variables added.\nA total of {data.shape[0]} rows were processed.''')
         return data
 
@@ -56,10 +65,10 @@ class DataCleaner:
             - Remove the rows with delivery time greater than the allowed threshold;
             - Return the filtered df
         """
-        data['estimated_delivery_time'] = data[ORDER_PLACE_DURATION_COLUMN] + data[STORE_CLIENT_DURATION_COLUMN]
-        data['delivery_time'] = (data[DELIVERY_COLUMN] - data[DATE_COLUMN]) / pd.Timedelta(seconds=1)
-        data['delivery_time_hours'] = data['delivery_time'] / 3600.0
-        data_filtered = data.loc[data['delivery_time_hours'].le(delivery_threshold)]
+        data[ESTIMATED_DELIVERY_COLUMN] = data[ORDER_PLACE_DURATION_COLUMN] + data[STORE_CLIENT_DURATION_COLUMN]
+        data[DELIVERY_TIME_SECONDS_COLUMN] = (data[DELIVERY_COLUMN] - data[DATE_COLUMN]) / pd.Timedelta(seconds=1)
+        data[DELIVERY_TIME_HOURS_COLUMN] = data[DELIVERY_TIME_SECONDS_COLUMN] / 3600.0
+        data_filtered = data.loc[data[DELIVERY_TIME_HOURS_COLUMN].le(delivery_threshold)]
         logging.info(
             f'''Target variables added.\nA total of {data.shape[0]} rows were processed and ''' 
             f'''{data.shape[0] - data_filtered.shape[0]} rows removed due to delivery above the {delivery_threshold}'''
