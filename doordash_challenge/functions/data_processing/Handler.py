@@ -1,4 +1,6 @@
 import logging
+from typing import List
+
 import pandas as pd
 logging.basicConfig(level=logging.INFO)
 FILL_NA_WITH_NEW_CATEGORY_METHOD = 'fill with new category'
@@ -41,14 +43,30 @@ class DataHandler:
         Use the median to fill numerical columns with nan values passed in the columns methods, or
         a specific column passed as a parameter
         """
-        if column is not None and self.fill_column_methods[column] == 'fill with median':
+        if column is not None and self.fill_column_methods[column] == FILL_NA_WITH_MEDIAN_METHOD:
             median = self.raw_data[column].median()
             self.fill_with_value[column] = median
             self.handler_data[column] = self.raw_data[column].fillna(median)
         else:
             for method_column, method in self.fill_column_methods.items():
-                if method == 'fill with median':
+                if method == FILL_NA_WITH_MEDIAN_METHOD:
                     median = self.raw_data[method_column].median()
                     self.fill_with_value[method_column] = median
                     self.handler_data[method_column] = self.raw_data[method_column].fillna(median)
+        return self.handler_data
+
+    def fill_na_with_cluster_median(self, cluster_columns: List):
+        """
+        Split the data in different groups based on the list of cluster columns and fill each group with the
+        specific median
+        """
+        for column, method in self.fill_column_methods.items():
+            if method == FILL_NA_WITH_CLUSTER_MEDIAN_METHOD:
+                cluster_data = self.raw_data\
+                    .groupby(cluster_columns, as_index=False)\
+                    .agg(median_value=(column, 'median'))
+                self.fill_with_cluster_value[column] = cluster_data
+                data = self.raw_data.merge(cluster_data, on=cluster_columns, how='left')
+                self.handler_data[column] = data[column].fillna(data['median_value'])
+
         return self.handler_data
