@@ -1,6 +1,5 @@
 import logging
 from typing import List
-
 import pandas as pd
 logging.basicConfig(level=logging.INFO)
 FILL_NA_WITH_NEW_CATEGORY_METHOD = 'fill with new category'
@@ -29,12 +28,17 @@ class DataHandler:
             self.fill_with_value[column] = extra_category_name
             self.handler_data[column] = self.raw_data[column].fillna(extra_category_name)
             self.handler_data[column] = self.handler_data[column].astype(str)
+            na_num, value = self.raw_data[column].isna().sum(), extra_category_name
+            logging.info(f'''{na_num} rows filled with value `{value}` for column {column}''')
+
         else:
             for method_column, method in self.fill_column_methods.items():
                 if method == FILL_NA_WITH_NEW_CATEGORY_METHOD:
                     self.fill_with_value[method_column] = extra_category_name
                     self.handler_data[method_column] = self.raw_data[method_column].fillna(extra_category_name)
                     self.handler_data[method_column] = self.handler_data[method_column].astype(str)
+                    na_num, value = self.raw_data[method_column].isna().sum(), extra_category_name
+                    logging.info(f'''{na_num} rows filled with value `{value}` for column {method_column}''')
 
         return self.handler_data
 
@@ -47,12 +51,16 @@ class DataHandler:
             median = self.raw_data[column].median()
             self.fill_with_value[column] = median
             self.handler_data[column] = self.raw_data[column].fillna(median)
+            na_num, value = self.raw_data[column].isna().sum(), median
+            logging.info(f'''{na_num} rows filled with value `{value}` for column {column}''')
         else:
             for method_column, method in self.fill_column_methods.items():
                 if method == FILL_NA_WITH_MEDIAN_METHOD:
                     median = self.raw_data[method_column].median()
                     self.fill_with_value[method_column] = median
                     self.handler_data[method_column] = self.raw_data[method_column].fillna(median)
+                    na_num, value = self.raw_data[method_column].isna().sum(), median
+                    logging.info(f'''{na_num} rows filled with value `{value}` for column {method_column}''')
         return self.handler_data
 
     def fill_na_with_cluster_median(self, cluster_columns: List):
@@ -68,5 +76,9 @@ class DataHandler:
                 self.fill_with_cluster_value[column] = cluster_data
                 data = self.raw_data.merge(cluster_data, on=cluster_columns, how='left')
                 self.handler_data[column] = data[column].fillna(data['median_value'])
+                na_num = self.raw_data[column].isna().sum()
+                logging.info(
+                    f'''{na_num} rows for column {column} filled with cluster df:\n {cluster_data.to_string()}'''
+                )
 
         return self.handler_data
