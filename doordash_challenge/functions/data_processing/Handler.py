@@ -18,9 +18,15 @@ class DataHandler:
         """
         self.raw_data = data.copy()
         self.handler_data = data.copy()
-        self.fill_column_methods = fill_column_methods
         self.fill_with_value = {}
         self.fill_with_cluster_value = {}
+        for method in set(fill_column_methods.values()):
+            allowed_methods = \
+                [FILL_NA_WITH_NEW_CATEGORY_METHOD, FILL_NA_WITH_MEDIAN_METHOD, FILL_NA_WITH_CLUSTER_MEDIAN_METHOD]
+            if method not in allowed_methods:
+                raise ValueError(f'Method `{method}` not supported by the Handler')
+            else:
+                self.fill_column_methods = fill_column_methods
 
     def fill_na_with_new_category(self, extra_category_name='not informed', column=None):
         """
@@ -75,10 +81,10 @@ class DataHandler:
             if method == FILL_NA_WITH_CLUSTER_MEDIAN_METHOD:
                 cluster_data = self.raw_data \
                     .groupby(cluster_columns, as_index=False) \
-                    .agg(median_value=(column, 'median'))
+                    .agg(median=(column, 'median'))
                 self.fill_with_cluster_value[column] = cluster_data
                 data = self.raw_data.merge(cluster_data, on=cluster_columns, how='left')
-                self.handler_data[column] = data[column].fillna(data['median_value'])
+                self.handler_data[column] = data[column].fillna(data['median'])
                 na_num = self.raw_data[column].isna().sum()
                 logging.info(
                     f'''{na_num} rows for column {column} filled with cluster df:\n {cluster_data.to_string()}'''
@@ -95,3 +101,24 @@ class DataHandler:
         _ = self.fill_na_with_median()
         handler_data = self.fill_na_with_cluster_median(cluster_columns)
         return handler_data
+
+    def fill_missing_values_testing_data(self, test_data):
+        """
+        Fill missing values with the values learnt from the training data
+        """
+        if len(self.fill_with_value) == 0 and len(self.fill_with_cluster_value) == 0:
+            raise ValueError('No missing data parameter was learnt yet')
+        for column, method in self.fill_column_methods.items():
+            if method in [FILL_NA_WITH_NEW_CATEGORY_METHOD, FILL_NA_WITH_MEDIAN_METHOD]:
+                test_data[column] = test_data[column].fillna(self.fill_with_value[column])
+            elif method == FILL_NA_WITH_CLUSTER_MEDIAN_METHOD:
+                cluster_data = self.fill_with_cluster_value[column]
+                cluster_columns = list(cluster_data.columns)[:-1]
+                for cluster_column in cluster_columns:
+                    if cluster_column not in list(test_data.columns):
+                        raise ValueError(f'One of the cluster columns is missing in the test data: {cluster_column}')
+                data = test_data.merge(cluster_data, on=cluster_columns, how='left')
+                test_data[column] = data[column].fillna(data['median'])
+                # If there is a new value never seen in a cluster, fill with 0
+                test_data[column] = test_data[column].fillna(0)
+        return test_data
