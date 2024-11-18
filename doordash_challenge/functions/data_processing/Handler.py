@@ -1,10 +1,13 @@
 import logging
 from typing import List
+
 import pandas as pd
+
 logging.basicConfig(level=logging.INFO)
 FILL_NA_WITH_NEW_CATEGORY_METHOD = 'fill with new category'
 FILL_NA_WITH_MEDIAN_METHOD = 'fill with median'
 FILL_NA_WITH_CLUSTER_MEDIAN_METHOD = 'fill with cluster median'
+
 
 class DataHandler:
     def __init__(self, data: pd.DataFrame, fill_column_methods: dict):
@@ -19,7 +22,7 @@ class DataHandler:
         self.fill_with_value = {}
         self.fill_with_cluster_value = {}
 
-    def fill_na_with_new_category(self, extra_category_name, column=None):
+    def fill_na_with_new_category(self, extra_category_name='not informed', column=None):
         """
         Add a new value for the categorical columns with nan values passed in the columns methods, or
         a specific column passed as a parameter
@@ -70,8 +73,8 @@ class DataHandler:
         """
         for column, method in self.fill_column_methods.items():
             if method == FILL_NA_WITH_CLUSTER_MEDIAN_METHOD:
-                cluster_data = self.raw_data\
-                    .groupby(cluster_columns, as_index=False)\
+                cluster_data = self.raw_data \
+                    .groupby(cluster_columns, as_index=False) \
                     .agg(median_value=(column, 'median'))
                 self.fill_with_cluster_value[column] = cluster_data
                 data = self.raw_data.merge(cluster_data, on=cluster_columns, how='left')
@@ -82,3 +85,13 @@ class DataHandler:
                 )
 
         return self.handler_data
+
+    def fill_missing_values_training_data(self, cluster_columns: List):
+        """
+        Fill the missing data for all columns in the input df with the respective methods described in the
+        input dictionary
+        """
+        _ = self.fill_na_with_new_category()
+        _ = self.fill_na_with_median()
+        handler_data = self.fill_na_with_cluster_median(cluster_columns)
+        return handler_data

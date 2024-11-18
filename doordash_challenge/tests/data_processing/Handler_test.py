@@ -34,7 +34,7 @@ class DataHandlerTest(unittest.TestCase):
             'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
             'numerical_column_cluster_median': [2, 4, np.nan, 10, 12, np.nan],
         })
-        df_returned = self.data_handler.fill_na_with_new_category(extra_category_name='not informed')
+        df_returned = self.data_handler.fill_na_with_new_category()
         pd.testing.assert_frame_equal(df_expected,df_returned)
 
     def test_na_with_new_category__fill_specific_column(self):
@@ -109,4 +109,17 @@ class DataHandlerTest(unittest.TestCase):
         })
         df_returned = \
             self.data_handler.fill_na_with_cluster_median(cluster_columns=['categorical_column_cluster_median'])
+        pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test_fill_missing_values_training_data(self):
+        df_expected = pd.DataFrame({
+            'categorical_column_1': ['type_1', 'type_2', 'type_3', 'type_4', 'type_5', 'not informed'],
+            'categorical_column_2': ['type_1', 'type_2', 'type_3', 'type_4', 'type_5', 'not informed'],
+            'numerical_column_normal_median_1': [1., 2., 3., 4., 5., 3.0],
+            'numerical_column_normal_median_2': [6., 7., 8., 9., 10., 8.0],
+            'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
+            'numerical_column_cluster_median': [2.0, 4.0, 3.0, 10.0, 12.0, 11.0],
+        })
+        cluster_columns = ['categorical_column_cluster_median']
+        df_returned = self.data_handler.fill_missing_values_training_data(cluster_columns)
         pd.testing.assert_frame_equal(df_expected, df_returned)
