@@ -30,16 +30,20 @@ class DataTransformer:
         )
         return grouped_data
     @staticmethod
-    def get_column_totals(data, total_columns: List):
+    def get_market_id_kpis(data):
         """
         Given the `data` df group the data with the columns in the `group_columns` list calculating the metrics
         passed in the metrics dictionary with the logic {column_name:['column_to_be_calculated','operation']} ex:
         {'total_spend':['subtotal','sum'], 'n_transactions':['created_at','count'], 'total_items':['items','sum']}
         """
-        total_dict = {}
-        for column in total_columns:
-            total_dict[column] = data[column].sum()
-        return total_dict
+        kpis_dict = {}
+        kpis_dict['total_revenue'] = data['subtotal'].sum()
+        kpis_dict['total_transactions'] = data['transactions'].sum()
+        kpis_dict['total_items'] = data['items'].sum()
+        kpis_dict['food_categories'] = len(data['store_primary_category'].unique())
+        kpis_dict['avg_number_of_items'] = np.round(kpis_dict['total_items']/kpis_dict['total_transactions'], 2)
+        kpis_dict['avg_revenue'] = np.round(kpis_dict['total_revenue'] / kpis_dict['total_transactions'], 2)
+        return kpis_dict
 
     @staticmethod
     def generate_cumulative_time_series(data, date_column, metric='revenue'):

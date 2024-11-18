@@ -117,5 +117,37 @@ class DataViewer:
             xaxis={'showticklabels': False},
         )
         return fig
+    @staticmethod
+    def generate_all_streamlit_objects(data: pd.DataFrame, metric: str):
+        time_series_plot = \
+            DataViewer.plot_time_series(data, date_column='week', metric=metric, title='Historical Metric Evolution')
+        weekday_plot = DataViewer.plot_percentage_distribution(
+            data, column='weekday', metric=metric, title='Metric comparison per weekday', color='#0ACFC5',
+            order_values=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        )
+        time_of_day_plot = DataViewer.plot_percentage_distribution(
+            data, column='time_of_day', metric=metric, order_values=['Morning', 'Afternoon', 'Evening', 'Night'],
+            title='Metric comparison per time of the day', color='#F8E500'
+        )
+        store_rank = DataViewer.plot_bar_rank(
+            data, column='store_id', metric=metric, title='Top Stores in the region', color='#005848', rank=10
+        )
+        category_rank = DataViewer.plot_bar_rank(
+            data, column='store_primary_category', metric=metric, title='Top food category', color='#005848', rank=10
+        )
+        protocol_rank = DataViewer.plot_bar_rank(
+            data, column='order_protocol', metric=metric, title='Top protocols', color='#005848', rank=10
+        )
+        kpis = DataTransformer.get_market_id_kpis(data)
+        dict_of_objects = {
+            'time_series_plot': time_series_plot,
+            'weekday_plot': weekday_plot,
+            'time_of_day_plot': time_of_day_plot,
+            'store_rank': store_rank,
+            'category_rank': category_rank,
+            'protocol_rank': protocol_rank,
+            'kpis': kpis
+        }
+        return dict_of_objects
 
 
