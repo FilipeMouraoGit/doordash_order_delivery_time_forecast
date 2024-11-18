@@ -80,3 +80,83 @@ class TransformerTest(unittest.TestCase):
         df_returned = DataTransformer\
             .group_data(df_data, group_columns=['group_column_1', 'group_column_2'], agg_methods=agg_methods)
         pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test_generate_cumulative_time_series__default_metric(self):
+        df_data = pd.DataFrame({
+            'day': ['1', '1', '2', '3', '4', '5', '6', '6', '7', '8'],
+            'week': ['1', '1', '1', '2', '2', '2', '3', '3', '3', '3'],
+            'subtotal': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            'transactions': [5, 6, 7, 2, 1, 1, 4, 3, 4, 7],
+            'items': [2, 1, 4, 5, 6, 7, 8, 2, 10, 7]
+        })
+        df_expected = pd.DataFrame({
+            'day': ['1', '2', '3', '4', '5', '6', '7', '8'],
+            'metric': [30, 30, 40, 50, 60, 150, 90, 100],
+            'cum_metric': [30, 60, 100, 150, 210, 360, 450, 550]
+        })
+
+        df_returned = DataTransformer.generate_cumulative_time_series(df_data, date_column='day')
+        pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test_generate_cumulative_time_series__default_metric_week(self):
+        df_data = pd.DataFrame({
+            'day': ['1', '1', '2', '3', '4', '5', '6', '6', '7', '8'],
+            'week': ['1', '1', '1', '2', '2', '2', '3', '3', '3', '3'],
+            'subtotal': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            'transactions': [5, 6, 7, 2, 1, 1, 4, 3, 4, 7],
+            'items': [2, 1, 4, 5, 6, 7, 8, 2, 10, 7]
+        })
+        df_expected = pd.DataFrame({'week': ['1', '2', '3'], 'metric': [60, 150, 340], 'cum_metric': [60, 210, 550]})
+        df_returned = DataTransformer.generate_cumulative_time_series(df_data, date_column='week')
+        pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test_generate_cumulative_time_series__items_metric(self):
+        df_data = pd.DataFrame({
+            'day': ['1', '1', '2', '3', '4', '5', '6', '6', '7', '8'],
+            'week': ['1', '1', '1', '2', '2', '2', '3', '3', '3', '3'],
+            'subtotal': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            'transactions': [5, 6, 7, 2, 1, 1, 4, 3, 4, 7],
+            'items': [2, 1, 4, 5, 6, 7, 8, 2, 10, 7]
+        })
+        df_expected = pd.DataFrame({
+            'day': ['1', '2', '3', '4', '5', '6', '7', '8'],
+            'metric': [3, 4, 5, 6, 7, 10, 10, 7],
+            'cum_metric': [3, 7, 12, 18, 25, 35, 45, 52]
+        })
+
+        df_returned = DataTransformer\
+            .generate_cumulative_time_series(df_data, date_column='day', metric='number of items')
+        pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test_generate_cumulative_time_series__transaction_metric(self):
+        df_data = pd.DataFrame({
+            'day': ['1', '1', '2', '3', '4', '5', '6', '6', '7', '8'],
+            'week': ['1', '1', '1', '2', '2', '2', '3', '3', '3', '3'],
+            'subtotal': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            'transactions': [5, 6, 7, 2, 1, 1, 4, 3, 4, 7],
+            'items': [2, 1, 4, 5, 6, 7, 8, 2, 10, 7]
+        })
+        df_expected = pd.DataFrame({
+            'day': ['1', '2', '3', '4', '5', '6', '7', '8'],
+            'metric': [11, 7, 2, 1, 1, 7, 4, 7],
+            'cum_metric': [11, 18, 20, 21, 22, 29, 33, 40]
+        })
+
+        df_returned = DataTransformer\
+            .generate_cumulative_time_series(df_data, date_column='day', metric='number of transactions')
+        pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test_generate_cumulative_time_series__raise_error(self):
+        df_data = pd.DataFrame({
+            'day': ['1', '1', '2', '3', '4', '5', '6', '6', '7', '8'],
+            'week': ['1', '1', '1', '2', '2', '2', '3', '3', '3', '3'],
+            'subtotal': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+            'transactions': [5, 6, 7, 2, 1, 1, 4, 3, 4, 7],
+            'items': [2, 1, 4, 5, 6, 7, 8, 2, 10, 7]
+        })
+
+        try:
+            _ = DataTransformer \
+                .generate_cumulative_time_series(df_data, date_column='day', metric='new metric')
+        except Exception as error:
+            self.assertEqual(error.args[0], 'Metric `new metric` not supported')
