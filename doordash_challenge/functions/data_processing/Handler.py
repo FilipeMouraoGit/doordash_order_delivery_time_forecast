@@ -38,7 +38,7 @@ class DataHandler:
             self.handler_data[column] = self.raw_data[column].fillna(extra_category_name)
             self.handler_data[column] = self.handler_data[column].astype(str)
             na_num, value = self.raw_data[column].isna().sum(), extra_category_name
-            logging.info(f'''{na_num} rows filled with value `{value}` for column {column}''')
+            logging.info(f'''\n{na_num} rows filled with value `{value}` for column {column}''')
 
         else:
             for method_column, method in self.fill_column_methods.items():
@@ -47,7 +47,7 @@ class DataHandler:
                     self.handler_data[method_column] = self.raw_data[method_column].fillna(extra_category_name)
                     self.handler_data[method_column] = self.handler_data[method_column].astype(str)
                     na_num, value = self.raw_data[method_column].isna().sum(), extra_category_name
-                    logging.info(f'''{na_num} rows filled with value `{value}` for column {method_column}''')
+                    logging.info(f'''\n{na_num} rows filled with value `{value}` for column {method_column}''')
 
         return self.handler_data
 
@@ -61,7 +61,7 @@ class DataHandler:
             self.fill_with_value[column] = median
             self.handler_data[column] = self.raw_data[column].fillna(median)
             na_num, value = self.raw_data[column].isna().sum(), median
-            logging.info(f'''{na_num} rows filled with value `{value}` for column {column}''')
+            logging.info(f'''\n{na_num} rows filled with value `{value}` for column {column}''')
         else:
             for method_column, method in self.fill_column_methods.items():
                 if method == FILL_NA_WITH_MEDIAN_METHOD:
@@ -69,7 +69,7 @@ class DataHandler:
                     self.fill_with_value[method_column] = median
                     self.handler_data[method_column] = self.raw_data[method_column].fillna(median)
                     na_num, value = self.raw_data[method_column].isna().sum(), median
-                    logging.info(f'''{na_num} rows filled with value `{value}` for column {method_column}''')
+                    logging.info(f'''\n{na_num} rows filled with value `{value}` for column {method_column}''')
         return self.handler_data
 
     def fill_na_with_cluster_median(self, cluster_columns: List):
@@ -87,7 +87,7 @@ class DataHandler:
                 self.handler_data[column] = data[column].fillna(data['median'])
                 na_num = self.raw_data[column].isna().sum()
                 logging.info(
-                    f'''{na_num} rows for column {column} filled with cluster df:\n {cluster_data.to_string()}'''
+                    f'''\n{na_num} rows for column {column} filled with cluster df:\n {cluster_data.to_string()}'''
                 )
 
         return self.handler_data

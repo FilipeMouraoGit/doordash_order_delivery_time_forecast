@@ -53,7 +53,7 @@ class DataCleaner:
                 return 'Night'
 
         data[TIME_OF_DAY_COLUMN] = data.apply(lambda row: categorize_time_of_day(row['hour']), axis=1)
-        logging.info(f'''Date variables added.\nA total of {data.shape[0]} rows were processed.''')
+        logging.info(f'''\nDate variables added.\nA total of {data.shape[0]} rows were processed.''')
         return data
 
     @staticmethod
@@ -70,7 +70,7 @@ class DataCleaner:
         data[DELIVERY_TIME_HOURS_COLUMN] = data[DELIVERY_TIME_SECONDS_COLUMN] / 3600.0
         data_filtered = data.loc[data[DELIVERY_TIME_HOURS_COLUMN].le(delivery_threshold)]
         logging.info(
-            f'''Target variables added.\nA total of {data.shape[0]} rows were processed and ''' 
+            f'''\nTarget variables added.\nA total of {data.shape[0]} rows were processed and ''' 
             f'''{data.shape[0] - data_filtered.shape[0]} rows removed due to delivery above the {delivery_threshold}'''
             f''' hours threshold.'''
         )
@@ -91,7 +91,7 @@ class DataCleaner:
             (data_filtered[TOTAL_DASHERS_COLUMN] - data_filtered[BUSY_DASHERS_COLUMN]).clip(lower=0)
         data_filtered = data_filtered.drop(BUSY_DASHERS_COLUMN, axis=1)
         logging.info(
-            f'''Negative values removed.\nA total of {data.shape[0]} rows were processed and '''
+            f'''\nNegative values removed.\nA total of {data.shape[0]} rows were processed and '''
             f'''{data.shape[0] - data_filtered.shape[0]} rows removed due to not allowed negative values for columns'''
             f''' ({SUBTOTAL_COLUMN}, {TOTAL_DASHERS_COLUMN}, {BUSY_DASHERS_COLUMN}, {BUSY_DASHERS_COLUMN})'''
         )
@@ -104,7 +104,7 @@ class DataCleaner:
         Correct the store_id attributes on the list `columns_to_be_corrected` based on 2 rules
         """
         data_corrected = data.copy()
-        log_info_string = f'''Store data was curated.\nA total of {data.shape[0]} rows were processed\n'''
+        log_info_string = f'''\nStore data was curated.\nA total of {data.shape[0]} rows were processed\n'''
         for column in columns_to_be_corrected:
             group_data = data \
                 .groupby([column, STORE_COLUMN], as_index=False) \
