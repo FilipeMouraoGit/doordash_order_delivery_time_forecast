@@ -2,6 +2,7 @@ import logging
 from typing import List
 import pandas as pd
 import numpy as np
+
 logging.basicConfig(level=logging.INFO)
 
 ALLOWED_METRICS = {
@@ -9,6 +10,8 @@ ALLOWED_METRICS = {
     'revenue': ['subtotal', 'sum'],
     'number of items': ['items', 'sum']
 }
+
+
 class DataTransformer:
     @staticmethod
     def group_data(data: pd.DataFrame, group_columns: List, agg_methods: dict):
@@ -29,6 +32,7 @@ class DataTransformer:
             data, group_columns=[column], agg_methods={'metric': ALLOWED_METRICS[metric]}
         )
         return grouped_data
+
     @staticmethod
     def get_market_id_kpis(data):
         """
@@ -36,13 +40,14 @@ class DataTransformer:
         passed in the metrics dictionary with the logic {column_name:['column_to_be_calculated','operation']} ex:
         {'total_spend':['subtotal','sum'], 'n_transactions':['created_at','count'], 'total_items':['items','sum']}
         """
-        kpis_dict = {}
-        kpis_dict['total_revenue'] = data['subtotal'].sum()
-        kpis_dict['total_transactions'] = data['transactions'].sum()
-        kpis_dict['total_items'] = data['items'].sum()
-        kpis_dict['food_categories'] = len(data['store_primary_category'].unique())
-        kpis_dict['avg_number_of_items'] = np.round(kpis_dict['total_items']/kpis_dict['total_transactions'], 2)
-        kpis_dict['avg_revenue'] = np.round(kpis_dict['total_revenue'] / kpis_dict['total_transactions'], 2)
+        kpis_dict = {
+            'total_revenue': f"{data['subtotal'].sum():,}",
+            'total_transactions': f"{data['transactions'].sum():,}",
+            'total_items': f"{data['items'].sum():,}",
+            'food_categories': f"{len(data['store_primary_category'].unique()):,}",
+            'avg_number_of_items': f"{(np.round(data['items'].sum() / data['transactions'].sum(), 2)):,}",
+            'avg_revenue': f"{(np.round(data['subtotal'].sum() / data['transactions'].sum(), 2)):,}",
+        }
         return kpis_dict
 
     @staticmethod
@@ -51,8 +56,9 @@ class DataTransformer:
         grouped_data = grouped_data.sort_values(date_column)
         grouped_data['cum_metric'] = grouped_data['metric'].cumsum()
         return grouped_data
+
     @staticmethod
-    def generate_percentage_grop(data, column, metric='revenue'):
+    def generate_percentage_group(data, column, metric='revenue'):
         grouped_data = DataTransformer.validate_metric_and_group(data, column, metric)
         grouped_data = grouped_data.set_index(column)
         percentage_df = 100 * np.round(grouped_data / grouped_data.sum(), 2)
@@ -65,4 +71,3 @@ class DataTransformer:
         grouped_data = grouped_data.sort_values('metric')
         top_data = grouped_data.tail(rank)
         return top_data
-

@@ -24,7 +24,7 @@ class DataViewer:
         fig.add_trace(go.Bar(
             x=data_to_plot[date_column],
             y=data_to_plot['metric'],
-            name=f'{date_column} - {metric}',
+            name=f'{date_column}',
             text=text_legend,
             textposition='outside',
             marker_color='#FF3008'
@@ -61,7 +61,7 @@ class DataViewer:
         passed in the metrics dictionary with the logic {column_name:['column_to_be_calculated','operation']} ex:
         {'total_spend':['subtotal','sum'], 'n_transactions':['created_at','count'], 'total_items':['items','sum']}
         """
-        percentage_df = DataTransformer.generate_percentage_grop(data, column, metric)
+        percentage_df = DataTransformer.generate_percentage_group(data, column, metric)
         fig = px.bar(
             percentage_df,
             y=column,
