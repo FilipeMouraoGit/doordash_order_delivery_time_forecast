@@ -110,7 +110,6 @@ class TransformerTest(unittest.TestCase):
         df_returned = DataTransformer .validate_metric_and_group(df_data, column='day', metric='revenue')
         pd.testing.assert_frame_equal(df_expected, df_returned)
 
-
     def test_generate_cumulative_time_series__default_metric(self):
         df_data = pd.DataFrame({
             'day': ['1', '1', '2', '3', '4', '5', '6', '6', '7', '8'],
