@@ -41,7 +41,7 @@ class DataTransformer:
         {'total_spend':['subtotal','sum'], 'n_transactions':['created_at','count'], 'total_items':['items','sum']}
         """
         kpis_dict = {
-            'total_revenue': f"{data['subtotal'].sum():,}",
+            'total_revenue': f"{np.round(data['subtotal'].sum(),1):,}",
             'total_transactions': f"{data['transactions'].sum():,}",
             'total_items': f"{data['items'].sum():,}",
             'food_categories': f"{len(data['store_primary_category'].unique()):,}",

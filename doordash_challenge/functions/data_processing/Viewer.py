@@ -4,7 +4,7 @@ import numpy as np
 from doordash_challenge.functions.data_processing.Transformer import DataTransformer
 import plotly.graph_objects as go
 import plotly.express as px
-
+FONT_SIZE = 18
 
 class DataViewer:
     @staticmethod
@@ -39,12 +39,16 @@ class DataViewer:
             textposition="top center",
             marker_color='#0A3AC4'
         ))
+        fig.update_traces(textfont_size=FONT_SIZE)
         fig.update_layout(
             title={'text': title, 'x': 0.45, 'xanchor': 'center'},
             xaxis_title={'text': f'{date_column}'},
             yaxis_title={'text': 'Metric of Interest'},
             yaxis={'tickformat': ',', 'showticklabels': False},
-            template='plotly_dark')
+            template='plotly_dark',
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=0.5),
+            yaxis_range=[0, data_to_plot['cum_metric'].max() * 1.1]
+        )
         fig.update_yaxes(tickformat=",")
         return fig
     @staticmethod
@@ -70,14 +74,15 @@ class DataViewer:
             orientation='h',
             color_discrete_sequence=[color]
         )
-        fig.update_yaxes(type='category')
-        fig.update_traces(texttemplate='%{x:.2s}%', textposition='outside')
+        fig.update_yaxes(type='category', tickfont={'size': FONT_SIZE})
+        fig.update_traces(texttemplate='%{x:.2s}%', textposition='outside', textfont_size=FONT_SIZE)
         fig.update_layout(
             title={'text': title, 'x': 0.45, 'xanchor': 'center'},
             xaxis_title={'text': None},
             yaxis_title={'text': None},
             template='plotly_dark',
             xaxis={'showticklabels': False},
+            xaxis_range=[percentage_df['metric'].min() * 0.9, percentage_df['metric'].max() * 1.1]
         )
         return fig
 
@@ -107,14 +112,15 @@ class DataViewer:
             marker_color=color,
             orientation='h'
         ))
-        fig.update_yaxes(type='category')
-        fig.update_traces(textposition='outside')
+        fig.update_yaxes(type='category', tickfont={'size': FONT_SIZE})
+        fig.update_traces(textposition='outside', textfont_size=FONT_SIZE)
         fig.update_layout(
             title={'text': title, 'x': 0.45, 'xanchor': 'center'},
             xaxis_title={'text': None},
             yaxis_title={'text': None},
             template='plotly_dark',
             xaxis={'showticklabels': False},
+            xaxis_range=[rank_df['metric'].min() * 0.9, rank_df['metric'].max() * 1.2]
         )
         return fig
     @staticmethod
@@ -130,7 +136,7 @@ class DataViewer:
             title='Metric comparison per time of the day', color='#F8E500'
         )
         store_rank = DataViewer.plot_bar_rank(
-            data, column='store_id', metric=metric, title='Top Stores in the region', color='#005848', rank=10
+            data, column='store_id', metric=metric, title='Top Stores', color='#005848', rank=10
         )
         category_rank = DataViewer.plot_bar_rank(
             data, column='store_primary_category', metric=metric, title='Top food category', color='#005848', rank=10
