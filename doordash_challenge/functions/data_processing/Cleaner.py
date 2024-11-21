@@ -4,6 +4,7 @@ from typing import List
 import pandas as pd
 
 MARKET_ID_COLUMN = 'market_id'
+DAY_COLUMN = 'day'
 STORE_CATEGORY = 'store_primary_category'
 STORE_COLUMN = 'store_id'
 DATE_COLUMN = 'created_at'
@@ -41,6 +42,7 @@ class DataCleaner:
         data[WEEKDAY_COLUMN] = data[DATE_COLUMN].dt.day_name()
         data[WEEKEND_COLUMN] = (data[DATE_COLUMN].dt.weekday > 4).astype(int)
         data[HOUR_COLUMN] = data[DATE_COLUMN].dt.hour
+        data[DAY_COLUMN] = data[DATE_COLUMN].dt.day
 
         def categorize_time_of_day(hour):
             if 5 <= hour < 12:

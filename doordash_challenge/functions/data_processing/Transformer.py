@@ -6,8 +6,8 @@ import numpy as np
 logging.basicConfig(level=logging.INFO)
 
 ALLOWED_METRICS = {
-    'number of transactions': ['transactions', 'sum'],
     'revenue': ['subtotal', 'sum'],
+    'number of transactions': ['transactions', 'sum'],
     'number of items': ['items', 'sum']
 }
 
@@ -44,10 +44,17 @@ class DataTransformer:
             'total_revenue': f"{np.round(data['subtotal'].sum(),1):,}",
             'total_transactions': f"{data['transactions'].sum():,}",
             'total_items': f"{data['items'].sum():,}",
-            'food_categories': f"{len(data['store_primary_category'].unique()):,}",
+            'distinct_food_categories': f"{len(data['store_primary_category'].unique()):,}",
+            'total_number_of_stores': f"{len(data['store_id'].unique()):,}",
             'avg_number_of_items': f"{(np.round(data['items'].sum() / data['transactions'].sum(), 2)):,}",
             'avg_revenue': f"{(np.round(data['subtotal'].sum() / data['transactions'].sum(), 2)):,}",
+
         }
+        avg_transactions = data.groupby('store_id', as_index=False).agg({'transactions': 'sum', 'day': 'nunique'})
+        avg_transactions['avg_transaction_per_day'] = avg_transactions['transactions'] / avg_transactions['day']
+        kpis_dict['p25_transaction_per_day'] = np.round(avg_transactions['avg_transaction_per_day'].quantile(0.25), 1)
+        kpis_dict['p75_transaction_per_day'] = np.round(avg_transactions['avg_transaction_per_day'].quantile(0.75), 1)
+        kpis_dict['p95_transaction_per_day'] = np.round(avg_transactions['avg_transaction_per_day'].quantile(0.95), 1)
         return kpis_dict
 
     @staticmethod

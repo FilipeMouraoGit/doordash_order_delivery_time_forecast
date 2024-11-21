@@ -193,7 +193,7 @@ class TransformerTest(unittest.TestCase):
     def test_get_market_id_kpis(self):
         df_data = pd.DataFrame({
             'day': ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-            'store_primary_category': ['1', '2', '3', '2', '3', '4', '1', '2', '3', '4'],
+            'store_id': ['1', '2', '3', '2', '3', '4', '1', '2', '3', '4'],
             'subtotal': [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000],
             'transactions': [500, 600, 700, 200, 100, 100, 400, 300, 400, 700],
             'items': [200, 100, 400, 500, 600, 700, 800, 200, 1000, 700],
@@ -201,7 +201,7 @@ class TransformerTest(unittest.TestCase):
         })
         kpis_dict_expected = {
             'total_revenue': '5,500,000', 'total_transactions': '4,000', 'total_items': '5,200',
-            'food_categories': '4', 'avg_number_of_items': '1.3', 'avg_revenue': '1,375.0'
+            'total_number_of_stores': '4', 'avg_number_of_items': '1.3', 'avg_revenue': '1,375.0'
         }
 
         kpis_dict_returned = DataTransformer.get_market_id_kpis(df_data)
