@@ -1,29 +1,8 @@
 import logging
 from typing import List
-
 import pandas as pd
+from doordash_challenge.functions.data_processing.utils import *
 
-MARKET_ID_COLUMN = 'market_id'
-STORE_CATEGORY = 'store_primary_category'
-STORE_COLUMN = 'store_id'
-DATE_COLUMN = 'created_at'
-DELIVERY_COLUMN = 'actual_delivery_time'
-STORE_COLUMNS = 'store_id'
-ORDER_PLACE_DURATION_COLUMN = 'estimated_order_place_duration'
-STORE_CLIENT_DURATION_COLUMN = 'estimated_store_to_consumer_driving_duration'
-SUBTOTAL_COLUMN = 'subtotal'
-TOTAL_DASHERS_COLUMN = 'total_onshift_dashers'
-BUSY_DASHERS_COLUMN = 'total_busy_dashers'
-AVAILABLE_DASHERS_COLUMN = 'availabe_dashers_onshift'
-TOTAL_ORDERS = 'total_outstanding_orders'
-WEEK_COLUMN = 'week'
-WEEKDAY_COLUMN = 'weekday'
-WEEKEND_COLUMN = 'weekend'
-HOUR_COLUMN = 'hour'
-TIME_OF_DAY_COLUMN = 'time_of_day'
-ESTIMATED_DELIVERY_COLUMN = 'estimated_delivery_time'
-DELIVERY_TIME_SECONDS_COLUMN = 'delivery_time'
-DELIVERY_TIME_HOURS_COLUMN = 'delivery_time_hours'
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,6 +20,7 @@ class DataCleaner:
         data[WEEKDAY_COLUMN] = data[DATE_COLUMN].dt.day_name()
         data[WEEKEND_COLUMN] = (data[DATE_COLUMN].dt.weekday > 4).astype(int)
         data[HOUR_COLUMN] = data[DATE_COLUMN].dt.hour
+        data[DAY_COLUMN] = data[DATE_COLUMN].dt.day
 
         def categorize_time_of_day(hour):
             if 5 <= hour < 12:
