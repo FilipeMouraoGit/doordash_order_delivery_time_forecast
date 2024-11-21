@@ -6,9 +6,9 @@ from doordash_challenge.functions.data_processing.utils import *
 logging.basicConfig(level=logging.INFO)
 
 ALLOWED_METRICS = {
-    'revenue': [SUBTOTAL_COLUMN, 'sum'],
-    'number of transactions': [TRANSACTIONS_COLUMN, 'sum'],
-    'number of items': [ITEMS_COLUMN, 'sum']
+    REVENUE_METRIC: [SUBTOTAL_COLUMN, 'sum'],
+    N_TRANSACTIONS_METRIC: [TRANSACTIONS_COLUMN, 'sum'],
+    N_ITEMS_METRIC: [ITEMS_COLUMN, 'sum']
 }
 
 
@@ -50,11 +50,11 @@ class DataTransformer:
             AVG_REVENUE: f"{(np.round(data[SUBTOTAL_COLUMN].sum() / data[TRANSACTIONS_COLUMN].sum(), 2)):,}",
 
         }
-        avg_transactions = data.groupby(STORE_COLUMN).agg({TRANSACTIONS_COLUMN: 'sum', DAY_COLUMN: 'nunique'})
-        avg_transactions['avg_daily_transaction'] = avg_transactions[TRANSACTIONS_COLUMN]/avg_transactions[DAY_COLUMN]
-        kpis_dict[P_25_AVG_DAILY_TRANSACTION] = np.round(avg_transactions['avg_daily_transaction'].quantile(0.25), 1)
-        kpis_dict[P_75_AVG_DAILY_TRANSACTION] = np.round(avg_transactions['avg_daily_transaction'].quantile(0.75), 1)
-        kpis_dict[P_95_AVG_DAILY_TRANSACTION] = np.round(avg_transactions['avg_daily_transaction'].quantile(0.95), 1)
+        avg_transac = data.groupby(STORE_COLUMN).agg({TRANSACTIONS_COLUMN: 'sum', DAY_COLUMN: 'nunique'})
+        avg_transac['avg_daily_transaction'] = avg_transac[TRANSACTIONS_COLUMN]/avg_transac[DAY_COLUMN]
+        kpis_dict[P_25_AVG_DAILY_TRANSACTION] = f"{np.round(avg_transac['avg_daily_transaction'].quantile(0.25), 1):,}"
+        kpis_dict[P_75_AVG_DAILY_TRANSACTION] = f"{np.round(avg_transac['avg_daily_transaction'].quantile(0.75), 1):,}"
+        kpis_dict[P_95_AVG_DAILY_TRANSACTION] = f"{np.round(avg_transac['avg_daily_transaction'].quantile(0.95), 1):,}"
         return kpis_dict
 
     @staticmethod

@@ -27,6 +27,10 @@ TRANSACTIONS_COLUMN = 'transactions'
 FILL_NA_WITH_NEW_CATEGORY_METHOD = 'fill with new category'
 FILL_NA_WITH_MEDIAN_METHOD = 'fill with median'
 FILL_NA_WITH_CLUSTER_MEDIAN_METHOD = 'fill with cluster median'
+#### Metrics names
+REVENUE_METRIC = 'revenue'
+N_TRANSACTIONS_METRIC = 'number of transactions'
+N_ITEMS_METRIC = 'number of items'
 #### KPIs Names
 TOTAL_REVENUE = 'total_revenue'
 TOTAL_TRANSACTIONS = 'total_transactions'
