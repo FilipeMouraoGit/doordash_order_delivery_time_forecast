@@ -1,10 +1,7 @@
 import unittest
 import pandas as pd
 from doordash_challenge.functions.data_processing.Cleaner import DataCleaner
-from doordash_challenge.functions.data_processing.Cleaner import MARKET_ID_COLUMN, STORE_CATEGORY, STORE_COLUMN, \
-    DATE_COLUMN, DELIVERY_COLUMN, ORDER_PLACE_DURATION_COLUMN, STORE_CLIENT_DURATION_COLUMN, \
-    SUBTOTAL_COLUMN, TOTAL_DASHERS_COLUMN, BUSY_DASHERS_COLUMN, AVAILABLE_DASHERS_COLUMN, TOTAL_ORDERS
-
+from doordash_challenge.functions.data_processing.utils import *
 
 class DataCleanerTest(unittest.TestCase):
 
@@ -21,11 +18,12 @@ class DataCleanerTest(unittest.TestCase):
             'weekday': ['Wednesday', 'Friday', 'Tuesday', 'Thursday', 'Monday', 'Wednesday', 'Friday', 'Saturday'],
             'weekend': [0, 0, 0, 0, 0, 0, 0, 1],
             'hour': [5, 4, 11, 15, 17, 19, 21, 1],
-            'time_of_day': [
-                'Morning', 'Night', 'Morning', 'Afternoon', 'Evening', 'Evening', 'Night', 'Night']
+            'day': [23, 1, 5, 7, 11, 13, 15, 16],
+            'time_of_day': ['Morning', 'Night', 'Morning', 'Afternoon', 'Evening', 'Evening', 'Night', 'Night']
+
         })
         df_expected[DATE_COLUMN] = pd.to_datetime(df_expected[DATE_COLUMN])
-        for column in ['week', 'weekend', 'hour']:
+        for column in ['week', 'weekend', 'hour', 'day']:
             df_expected[column] = df_expected[column].astype(int)
         df_returned = DataCleaner.add_temporal_variables(df_data)
         df_returned['hour'] = df_returned['hour'].astype(int)

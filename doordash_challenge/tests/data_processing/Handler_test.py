@@ -2,8 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 from doordash_challenge.functions.data_processing.Handler import DataHandler
-from doordash_challenge.functions.data_processing.Handler import FILL_NA_WITH_NEW_CATEGORY_METHOD, \
-    FILL_NA_WITH_MEDIAN_METHOD, FILL_NA_WITH_CLUSTER_MEDIAN_METHOD
+from doordash_challenge.functions.data_processing.utils import *
 
 
 class DataHandlerTest(unittest.TestCase):

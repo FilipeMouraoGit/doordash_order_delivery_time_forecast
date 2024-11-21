@@ -2,13 +2,13 @@ import logging
 from typing import List
 import pandas as pd
 import numpy as np
-
+from doordash_challenge.functions.data_processing.utils import *
 logging.basicConfig(level=logging.INFO)
 
 ALLOWED_METRICS = {
-    'revenue': ['subtotal', 'sum'],
-    'number of transactions': ['transactions', 'sum'],
-    'number of items': ['items', 'sum']
+    'revenue': [SUBTOTAL_COLUMN, 'sum'],
+    'number of transactions': [TRANSACTIONS_COLUMN, 'sum'],
+    'number of items': [ITEMS_COLUMN, 'sum']
 }
 
 
@@ -41,20 +41,20 @@ class DataTransformer:
         {'total_spend':['subtotal','sum'], 'n_transactions':['created_at','count'], 'total_items':['items','sum']}
         """
         kpis_dict = {
-            'total_revenue': f"{np.round(data['subtotal'].sum(),1):,}",
-            'total_transactions': f"{data['transactions'].sum():,}",
-            'total_items': f"{data['items'].sum():,}",
-            'distinct_food_categories': f"{len(data['store_primary_category'].unique()):,}",
-            'total_number_of_stores': f"{len(data['store_id'].unique()):,}",
-            'avg_number_of_items': f"{(np.round(data['items'].sum() / data['transactions'].sum(), 2)):,}",
-            'avg_revenue': f"{(np.round(data['subtotal'].sum() / data['transactions'].sum(), 2)):,}",
+            TOTAL_REVENUE: f"{np.round(data[SUBTOTAL_COLUMN].sum(),1):,}",
+            TOTAL_TRANSACTIONS: f"{data[TRANSACTIONS_COLUMN].sum():,}",
+            TOTAL_ITEMS: f"{data[ITEMS_COLUMN].sum():,}",
+            DISTINCT_FOOD_CATEGORIES: f"{len(data[STORE_CATEGORY].unique()):,}",
+            TOTAL_NUMBER_OF_STORES: f"{len(data[STORE_COLUMN].unique()):,}",
+            AVG_NUMBER_OF_ITEMS: f"{(np.round(data[ITEMS_COLUMN].sum() / data[TRANSACTIONS_COLUMN].sum(), 2)):,}",
+            AVG_REVENUE: f"{(np.round(data[SUBTOTAL_COLUMN].sum() / data[TRANSACTIONS_COLUMN].sum(), 2)):,}",
 
         }
-        avg_transactions = data.groupby('store_id', as_index=False).agg({'transactions': 'sum', 'day': 'nunique'})
-        avg_transactions['avg_transaction_per_day'] = avg_transactions['transactions'] / avg_transactions['day']
-        kpis_dict['p25_transaction_per_day'] = np.round(avg_transactions['avg_transaction_per_day'].quantile(0.25), 1)
-        kpis_dict['p75_transaction_per_day'] = np.round(avg_transactions['avg_transaction_per_day'].quantile(0.75), 1)
-        kpis_dict['p95_transaction_per_day'] = np.round(avg_transactions['avg_transaction_per_day'].quantile(0.95), 1)
+        avg_transactions = data.groupby(STORE_COLUMN).agg({TRANSACTIONS_COLUMN: 'sum', DAY_COLUMN: 'nunique'})
+        avg_transactions['avg_daily_transaction'] = avg_transactions[TRANSACTIONS_COLUMN]/avg_transactions[DAY_COLUMN]
+        kpis_dict[P_25_AVG_DAILY_TRANSACTION] = np.round(avg_transactions['avg_daily_transaction'].quantile(0.25), 1)
+        kpis_dict[P_75_AVG_DAILY_TRANSACTION] = np.round(avg_transactions['avg_daily_transaction'].quantile(0.75), 1)
+        kpis_dict[P_95_AVG_DAILY_TRANSACTION] = np.round(avg_transactions['avg_daily_transaction'].quantile(0.95), 1)
         return kpis_dict
 
     @staticmethod

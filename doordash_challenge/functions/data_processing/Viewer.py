@@ -2,6 +2,7 @@ from typing import List
 import pandas as pd
 import numpy as np
 from doordash_challenge.functions.data_processing.Transformer import DataTransformer
+from doordash_challenge.functions.data_processing.utils import *
 import plotly.graph_objects as go
 import plotly.express as px
 FONT_SIZE = 18
@@ -125,34 +126,34 @@ class DataViewer:
         return fig
     @staticmethod
     def generate_all_streamlit_objects(data: pd.DataFrame, metric: str):
-        time_series_plot = \
-            DataViewer.plot_time_series(data, date_column='week', metric=metric, title='Historical Metric Evolution')
+        time_series_plot = DataViewer.plot_time_series(
+            data, date_column=WEEK_COLUMN, metric=metric, title='Historical Metric Evolution')
         weekday_plot = DataViewer.plot_percentage_distribution(
-            data, column='weekday', metric=metric, title='Metric comparison per weekday', color='#0ACFC5',
+            data, column=WEEKDAY_COLUMN, metric=metric, title='Metric comparison per weekday', color='#0ACFC5',
             order_values=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         )
         time_of_day_plot = DataViewer.plot_percentage_distribution(
-            data, column='time_of_day', metric=metric, order_values=['Morning', 'Afternoon', 'Evening', 'Night'],
+            data, column=TIME_OF_DAY_COLUMN, metric=metric, order_values=['Morning', 'Afternoon', 'Evening', 'Night'],
             title='Metric comparison per time of the day', color='#F8E500'
         )
         store_rank = DataViewer.plot_bar_rank(
-            data, column='store_id', metric=metric, title='Top Stores', color='#005848', rank=10
+            data, column=STORE_COLUMN, metric=metric, title='Top Stores', color='#005848', rank=10
         )
         category_rank = DataViewer.plot_bar_rank(
-            data, column='store_primary_category', metric=metric, title='Top food category', color='#005848', rank=10
+            data, column=STORE_CATEGORY, metric=metric, title='Top food category', color='#005848', rank=10
         )
         protocol_rank = DataViewer.plot_bar_rank(
-            data, column='order_protocol', metric=metric, title='Top protocols', color='#005848', rank=10
+            data, column=ORDER_PROTOCOL_COLUMN, metric=metric, title='Top protocols', color='#005848', rank=10
         )
         kpis = DataTransformer.get_market_id_kpis(data)
         dict_of_objects = {
-            'time_series_plot': time_series_plot,
-            'weekday_plot': weekday_plot,
-            'time_of_day_plot': time_of_day_plot,
-            'store_rank': store_rank,
-            'category_rank': category_rank,
-            'protocol_rank': protocol_rank,
-            'kpis': kpis
+            TIME_SERIES_PLOT: time_series_plot,
+            WEEKDAY_PLOT: weekday_plot,
+            TIME_OF_DAY_PLOT: time_of_day_plot,
+            STORE_RANK_PLOT: store_rank,
+            CATEGORY_RANK_PLOT: category_rank,
+            PROTOCOL_RANK_PLOT: protocol_rank,
+            KPIS: kpis
         }
         return dict_of_objects
 

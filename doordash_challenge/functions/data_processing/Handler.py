@@ -1,12 +1,9 @@
 import logging
 from typing import List
-
 import pandas as pd
+from doordash_challenge.functions.data_processing.utils import *
 
 logging.basicConfig(level=logging.INFO)
-FILL_NA_WITH_NEW_CATEGORY_METHOD = 'fill with new category'
-FILL_NA_WITH_MEDIAN_METHOD = 'fill with median'
-FILL_NA_WITH_CLUSTER_MEDIAN_METHOD = 'fill with cluster median'
 
 
 class DataHandler:
