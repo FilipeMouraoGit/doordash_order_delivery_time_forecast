@@ -9,7 +9,13 @@ logging.basicConfig(level=logging.INFO)
 
 
 class FeatureEngineering:
-    def __init__(self, data: pd.DataFrame, categorical_columns: List, numerical_columns: List):
+    def __init__(
+            self,
+            data: pd.DataFrame,
+            categorical_columns: List,
+            numerical_columns: List,
+            min_frequency: float = 0.01
+    ):
         """
         Initialize the class with  a dataframe with columns that have rows with nan values, the dictionary
         of methods to be used defines which method is going to be used for each column, ex:
@@ -21,10 +27,9 @@ class FeatureEngineering:
         self.raw_data = data.copy()
         self.scaled_data = data.copy()
         self.feature_processed_data = data.copy()
-        self.feature_transformer = ColumnTransformer(transformers=[
-            ('cat', OneHotEncoder(sparse_output=False), categorical_columns),
-            ('num', MinMaxScaler(), numerical_columns)
-        ])
+        encoder = OneHotEncoder(sparse_output=False, handle_unknown='infrequent_if_exist', min_frequency=min_frequency)
+        self.feature_transformer = ColumnTransformer(
+            transformers=[('cat', encoder, categorical_columns), ('num', MinMaxScaler(), numerical_columns)])
 
     def _percentile_scaler_training_data(self, lower_percentile, upper_percentile):
         for column in self.numerical_columns:
@@ -49,5 +54,9 @@ class FeatureEngineering:
             p_min = self.numerical_columns_scaler[column]['min_value']
             p_max = self.numerical_columns_scaler[column]['max_value']
             test_data_processed[column] = np.clip(test_data_processed[column], p_min, p_max)
-        test_transformed_data = self.feature_transformer.transform(test_data_processed)
+        transformed_data = self.feature_transformer.transform(test_data_processed)
+        test_transformed_data = pd.DataFrame(
+            transformed_data,
+            columns=self.feature_transformer.get_feature_names_out()
+        )
         return test_transformed_data
