@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
+from doordash_challenge.functions.data_processing.utils import *
 
 logging.basicConfig(level=logging.INFO)
 
@@ -15,6 +16,7 @@ class FeatureEngineering:
             categorical_columns: List,
             numerical_columns: List,
             min_frequency: float = 0.01
+
     ):
         """
         Initialize the class with  a dataframe with columns that have rows with nan values, the dictionary
@@ -30,7 +32,6 @@ class FeatureEngineering:
         encoder = OneHotEncoder(sparse_output=False, handle_unknown='infrequent_if_exist', min_frequency=min_frequency)
         self.feature_transformer = ColumnTransformer(
             transformers=[('cat', encoder, categorical_columns), ('num', MinMaxScaler(), numerical_columns)])
-
     def _percentile_scaler_training_data(self, lower_percentile, upper_percentile):
         for column in self.numerical_columns:
             p_min = np.percentile(self.raw_data[column], lower_percentile)

@@ -2,12 +2,13 @@ import logging
 from typing import List
 import pandas as pd
 from doordash_challenge.functions.data_processing.utils import *
+import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 
 
 class DataHandler:
-    def __init__(self, data: pd.DataFrame, fill_column_methods: dict):
+    def __init__(self, data: pd.DataFrame, fill_column_methods: dict, percentile_description_dict: dict):
         """
         Initialize the class with  a dataframe with columns that have rows with nan values, the dictionary
         of methods to be used defines which method is going to be used for each column, ex:
@@ -24,6 +25,9 @@ class DataHandler:
                 raise ValueError(f'Method `{method}` not supported by the Handler')
             else:
                 self.fill_column_methods = fill_column_methods
+        self.percentile_description_dict = percentile_description_dict
+        self.percentile_category_values_dict = {}
+        self.categories_percentile_dict = {}
 
     def fill_na_with_new_category(self, extra_category_name='not informed', column=None):
         """
@@ -119,3 +123,37 @@ class DataHandler:
                 # If there is a new value never seen in a cluster, fill with 0
                 test_data[column] = test_data[column].fillna(0)
         return test_data
+
+    def _generate_percentile_values(self):
+        for column, percentiles in self.percentile_description_dict.items():
+            initial_quantile = np.round(self.raw_data[column].quantile(percentiles[0]), 2)
+            category_dict = {f'Below Q{int(percentiles[0] * 100)}': initial_quantile}
+            for i in range(1, len(percentiles)):
+                val = percentiles[i]
+                old_val = percentiles[i - 1]
+                category_dict[f'Between Q{int(old_val * 100)} and Q{int(val * 100)}'] = np.round(
+                    self.raw_data[column].quantile(val), 2)
+            last_quantile = np.round(self.raw_data[column].quantile(percentiles[-1]), 2)
+            category_dict[f'Above Q{int(percentiles[-1] * 100)}'] = last_quantile
+            self.percentile_category_values_dict[column] = category_dict
+
+    def generate_percentile_categories(self, key_column=STORE_COLUMN):
+        self._generate_percentile_values()
+
+        def selecting_category(price, percentiles):
+            for key, value in percentiles.items():
+                if price <= value:
+                    return key
+            return list(percentiles.keys())[-1]
+
+        for column, percentiles in self.percentile_category_values_dict.items():
+            perc_df = self.raw_data[[key_column, column]].copy()
+            perc_df['category'] = perc_df.apply(lambda row: selecting_category(row[column], percentiles), axis=1)
+            perc_dict = perc_df.set_index(key_column)['category'].to_dict()
+            self.categories_percentile_dict[f'store_perc_category_{column}'] = perc_dict
+        return self.categories_percentile_dict
+
+    def map_percentile_categories_unseen_data(self, unseen_data, key_column=STORE_COLUMN):
+        for column, mapper in self.categories_percentile_dict.items():
+            unseen_data[column] = unseen_data[key_column].map(mapper)
+        return unseen_data
