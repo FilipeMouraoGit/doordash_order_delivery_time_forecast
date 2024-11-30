@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
-from doordash_challenge.functions.data_processing.utils import *
 
 logging.basicConfig(level=logging.INFO)
 

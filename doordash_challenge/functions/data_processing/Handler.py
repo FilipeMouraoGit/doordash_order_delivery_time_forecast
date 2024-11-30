@@ -5,14 +5,16 @@ from doordash_challenge.functions.data_processing.utils import *
 import numpy as np
 
 logging.basicConfig(level=logging.INFO)
-
+## add new test for nan category value
 
 class DataHandler:
     def __init__(self, data: pd.DataFrame, fill_column_methods: dict, percentile_description_dict: dict):
         """
-        Initialize the class with  a dataframe with columns that have rows with nan values, the dictionary
-        of methods to be used defines which method is going to be used for each column, ex:
+        Initialize the class with a df with columns that can have cells with nan values.
+        The dictionary of methods to be used defines which method is going to be used for each column, ex:
         {'column_1': 'fill with new category', 'column_2': 'fill with median', 'column_3': 'fill with cluster median'}
+        The percentile dict defines the numerical columns used to create the percentile categories columns ex:
+        {'column_3:[0.2, 0.5, 0.8]} would calculate percentiles 20, 50 and 80 for column_3
         """
         self.raw_data = data.copy()
         self.handler_data = data.copy()
@@ -26,7 +28,6 @@ class DataHandler:
             else:
                 self.fill_column_methods = fill_column_methods
         self.percentile_description_dict = percentile_description_dict
-        self.percentile_category_values_dict = {}
         self.categories_percentile_dict = {}
 
     def fill_na_with_new_category(self, extra_category_name='not informed', column=None):
@@ -73,6 +74,14 @@ class DataHandler:
                     logging.info(f'''\n{na_num} rows filled with value `{value}` for column {method_column}''')
         return self.handler_data
 
+    def _generate_column_cluster_data(self, raw_cluster_data, cluster_columns, column):
+        for cluster_column in cluster_columns:
+            raw_cluster_data[cluster_column] = raw_cluster_data[cluster_column].fillna('non_value')
+        cluster_data = raw_cluster_data.groupby(cluster_columns, as_index=False).agg(median=(column, 'median'))
+        cluster_median = raw_cluster_data.merge(cluster_data, on=cluster_columns, how='left')
+        cluster_median['column_with_cluster_median'] = cluster_median[column].fillna(cluster_median['median'])
+        return cluster_data, cluster_median['column_with_cluster_median'].to_list()
+
     def fill_na_with_cluster_median(self, cluster_columns: List):
         """
         Split the data in different groups based on the list of cluster columns and fill each group with the
@@ -80,12 +89,11 @@ class DataHandler:
         """
         for column, method in self.fill_column_methods.items():
             if method == FILL_NA_WITH_CLUSTER_MEDIAN_METHOD:
-                cluster_data = self.raw_data \
-                    .groupby(cluster_columns, as_index=False) \
-                    .agg(median=(column, 'median'))
+                raw_cluster_data = self.raw_data.copy()
+                cluster_data, cluster_median_values = \
+                    self._generate_column_cluster_data(raw_cluster_data, cluster_columns, column)
                 self.fill_with_cluster_value[column] = cluster_data
-                data = self.raw_data.merge(cluster_data, on=cluster_columns, how='left')
-                self.handler_data[column] = data[column].fillna(data['median'])
+                self.handler_data[column] = cluster_median_values
                 na_num = self.raw_data[column].isna().sum()
                 logging.info(
                     f'''\n{na_num} rows for column {column} filled with cluster df:\n {cluster_data.to_string()}'''
@@ -107,38 +115,56 @@ class DataHandler:
         """
         Fill missing values with the values learnt from the training data
         """
+        test_data_no_na = test_data.copy()
         if len(self.fill_with_value) == 0 and len(self.fill_with_cluster_value) == 0:
             raise ValueError('No missing data parameter was learnt yet')
         for column, method in self.fill_column_methods.items():
             if method in [FILL_NA_WITH_NEW_CATEGORY_METHOD, FILL_NA_WITH_MEDIAN_METHOD]:
-                test_data[column] = test_data[column].fillna(self.fill_with_value[column])
+                test_data_no_na[column] = test_data[column].fillna(self.fill_with_value[column])
             elif method == FILL_NA_WITH_CLUSTER_MEDIAN_METHOD:
                 cluster_data = self.fill_with_cluster_value[column]
                 cluster_columns = list(cluster_data.columns)[:-1]
+                test_data_raw = test_data.copy()
                 for cluster_column in cluster_columns:
                     if cluster_column not in list(test_data.columns):
                         raise ValueError(f'One of the cluster columns is missing in the test data: {cluster_column}')
-                data = test_data.merge(cluster_data, on=cluster_columns, how='left')
-                test_data[column] = data[column].fillna(data['median'])
-                # If there is a new value never seen in a cluster, fill with 0
-                test_data[column] = test_data[column].fillna(0)
-        return test_data
+                    test_data_raw[cluster_column] = test_data_raw[cluster_column].fillna('non_value')
+                data = test_data_raw.merge(cluster_data, on=cluster_columns, how='left')
+                data['cluster_median'] = data[column].fillna(data['median'])
+                test_data_no_na[column] = data['cluster_median'].to_list()
+        return test_data_no_na
 
-    def _generate_percentile_values(self):
+    def _generate_percentile_values(self, percentile_data):
+        """
+        Calculate the percentile_category_values_dict values categories and values for each column defined in the
+        percentile_description_dict, return the results in the percentile_category_values_dict
+            From the percentile_description_dict:
+            - Calculate the percentiles based on the percentile_data df;
+            - Define the percentile categories based on the values;
+            - Save the results in the percentile_category_values_dict
+        """
+        percentile_category_values_dict = {}
         for column, percentiles in self.percentile_description_dict.items():
-            initial_quantile = np.round(self.raw_data[column].quantile(percentiles[0]), 2)
+            initial_quantile = np.round(percentile_data[column].quantile(percentiles[0]), 2)
             category_dict = {f'Below Q{int(percentiles[0] * 100)}': initial_quantile}
             for i in range(1, len(percentiles)):
                 val = percentiles[i]
                 old_val = percentiles[i - 1]
                 category_dict[f'Between Q{int(old_val * 100)} and Q{int(val * 100)}'] = np.round(
-                    self.raw_data[column].quantile(val), 2)
-            last_quantile = np.round(self.raw_data[column].quantile(percentiles[-1]), 2)
+                    percentile_data[column].quantile(val), 2)
+            last_quantile = np.round(percentile_data[column].quantile(percentiles[-1]), 2)
             category_dict[f'Above Q{int(percentiles[-1] * 100)}'] = last_quantile
-            self.percentile_category_values_dict[column] = category_dict
+            percentile_category_values_dict[column] = category_dict
+        return percentile_category_values_dict
 
-    def generate_percentile_categories(self, key_column=STORE_COLUMN):
-        self._generate_percentile_values()
+    def generate_percentile_categories(self, percentile_data, key_column=STORE_COLUMN):
+        """
+        Generate the dictionary mappers, the key_column is a categorical column that would produce a
+        sparse dataset if a one hot encoding method would be applied, it is going to be converted in multiple
+        percentile columns using the percentile_data and the percentile_description_dict used when initializing the
+        class
+        """
+        percentile_category_values_dict = self._generate_percentile_values(percentile_data)
 
         def selecting_category(price, percentiles):
             for key, value in percentiles.items():
@@ -146,14 +172,19 @@ class DataHandler:
                     return key
             return list(percentiles.keys())[-1]
 
-        for column, percentiles in self.percentile_category_values_dict.items():
-            perc_df = self.raw_data[[key_column, column]].copy()
+        for column, percentiles in percentile_category_values_dict.items():
+            perc_df = percentile_data[[key_column, column]].copy()
             perc_df['category'] = perc_df.apply(lambda row: selecting_category(row[column], percentiles), axis=1)
             perc_dict = perc_df.set_index(key_column)['category'].to_dict()
             self.categories_percentile_dict[f'store_perc_category_{column}'] = perc_dict
-        return self.categories_percentile_dict
+            self.handler_data[f'store_perc_category_{column}'] = self.raw_data[key_column].map(perc_dict)
+        return self.handler_data
 
     def map_percentile_categories_unseen_data(self, unseen_data, key_column=STORE_COLUMN):
+        """
+        Use the learning categories_percentile_dict, apply the categories learnt from the percentile_data into the
+        unseen data
+        """
         for column, mapper in self.categories_percentile_dict.items():
             unseen_data[column] = unseen_data[key_column].map(mapper)
         return unseen_data

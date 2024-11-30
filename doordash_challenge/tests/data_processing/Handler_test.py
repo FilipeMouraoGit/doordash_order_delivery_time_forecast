@@ -15,7 +15,8 @@ class DataHandlerTest(unittest.TestCase):
             'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
             'numerical_column_cluster_median': [2, 4, np.nan, 10, 12, np.nan],
             'percentile_category': ['1', '2', '3', '4', '5', '6'],
-            'percentile_description_column': [1, 2, 3, 4, 5, 6]
+            'percentile_description_column_1': [1, 2, 3, 4, 5, 6],
+            'percentile_description_column_2': [16, 13, 14, 11, 15, 12],
         })
         self.fill_column_methods = {
             'categorical_column_1': FILL_NA_WITH_NEW_CATEGORY_METHOD,
@@ -24,7 +25,9 @@ class DataHandlerTest(unittest.TestCase):
             'numerical_column_normal_median_2': FILL_NA_WITH_MEDIAN_METHOD,
             'numerical_column_cluster_median': FILL_NA_WITH_CLUSTER_MEDIAN_METHOD
         }
-        self.percentile_description_dict = {'percentile_description_column': [0.2, 0.6]}
+        self.percentile_description_dict = {
+            'percentile_description_column_1': [0.2, 0.6], 'percentile_description_column_2': [0.2, 0.6]
+        }
         self.data_handler = DataHandler(
             data=self.raw_data,
             fill_column_methods=self.fill_column_methods,
@@ -50,7 +53,9 @@ class DataHandlerTest(unittest.TestCase):
             'numerical_column_normal_median_2': [6, 7, 8, 9, 10, np.nan],
             'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
             'numerical_column_cluster_median': [2, 4, np.nan, 10, 12, np.nan],
-            'percentile_description_column': [1, 2, 3, 4, 5, 6]
+            'percentile_category': ['1', '2', '3', '4', '5', '6'],
+            'percentile_description_column_1': [1, 2, 3, 4, 5, 6],
+            'percentile_description_column_2': [16, 13, 14, 11, 15, 12],
         })
         df_returned = self.data_handler.fill_na_with_new_category()
         pd.testing.assert_frame_equal(df_expected, df_returned)
@@ -63,7 +68,9 @@ class DataHandlerTest(unittest.TestCase):
             'numerical_column_normal_median_2': [6, 7, 8, 9, 10, np.nan],
             'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
             'numerical_column_cluster_median': [2, 4, np.nan, 10, 12, np.nan],
-            'percentile_description_column': [1, 2, 3, 4, 5, 6]
+            'percentile_category': ['1', '2', '3', '4', '5', '6'],
+            'percentile_description_column_1': [1, 2, 3, 4, 5, 6],
+            'percentile_description_column_2': [16, 13, 14, 11, 15, 12],
         })
         _ = self.data_handler.fill_na_with_new_category(
             extra_category_name='not available',
@@ -83,7 +90,9 @@ class DataHandlerTest(unittest.TestCase):
             'numerical_column_normal_median_2': [6, 7, 8, 9, 10, np.nan],
             'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
             'numerical_column_cluster_median': [2, 4, np.nan, 10, 12, np.nan],
-            'percentile_description_column': [1, 2, 3, 4, 5, 6]
+            'percentile_category': ['1', '2', '3', '4', '5', '6'],
+            'percentile_description_column_1': [1, 2, 3, 4, 5, 6],
+            'percentile_description_column_2': [16, 13, 14, 11, 15, 12],
         })
         _ = self.data_handler.fill_na_with_new_category(
             extra_category_name='not available'
@@ -102,7 +111,9 @@ class DataHandlerTest(unittest.TestCase):
             'numerical_column_normal_median_2': [6., 7., 8., 9., 10., 8.],
             'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
             'numerical_column_cluster_median': [2, 4, np.nan, 10, 12, np.nan],
-            'percentile_description_column': [1, 2, 3, 4, 5, 6]
+            'percentile_category': ['1', '2', '3', '4', '5', '6'],
+            'percentile_description_column_1': [1, 2, 3, 4, 5, 6],
+            'percentile_description_column_2': [16, 13, 14, 11, 15, 12],
         })
         df_returned = self.data_handler.fill_na_with_median()
         pd.testing.assert_frame_equal(df_expected, df_returned)
@@ -115,7 +126,9 @@ class DataHandlerTest(unittest.TestCase):
             'numerical_column_normal_median_2': [6., 7., 8., 9., 10., 8.],
             'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
             'numerical_column_cluster_median': [2, 4, np.nan, 10, 12, np.nan],
-            'percentile_description_column': [1, 2, 3, 4, 5, 6]
+            'percentile_category': ['1', '2', '3', '4', '5', '6'],
+            'percentile_description_column_1': [1, 2, 3, 4, 5, 6],
+            'percentile_description_column_2': [16, 13, 14, 11, 15, 12],
         })
         df_returned = self.data_handler.fill_na_with_median(column='numerical_column_normal_median_2')
         pd.testing.assert_frame_equal(df_expected, df_returned)
@@ -128,7 +141,9 @@ class DataHandlerTest(unittest.TestCase):
             'numerical_column_normal_median_2': [6., 7., 8., 9., 10., np.nan],
             'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
             'numerical_column_cluster_median': [2.0, 4.0, 3.0, 10.0, 12.0, 11.0],
-            'percentile_description_column': [1, 2, 3, 4, 5, 6]
+            'percentile_category': ['1', '2', '3', '4', '5', '6'],
+            'percentile_description_column_1': [1, 2, 3, 4, 5, 6],
+            'percentile_description_column_2': [16, 13, 14, 11, 15, 12],
         })
         df_returned = \
             self.data_handler.fill_na_with_cluster_median(cluster_columns=['categorical_column_cluster_median'])
@@ -142,7 +157,9 @@ class DataHandlerTest(unittest.TestCase):
             'numerical_column_normal_median_2': [6., 7., 8., 9., 10., 8.0],
             'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
             'numerical_column_cluster_median': [2.0, 4.0, 3.0, 10.0, 12.0, 11.0],
-            'percentile_description_column': [1, 2, 3, 4, 5, 6]
+            'percentile_category': ['1', '2', '3', '4', '5', '6'],
+            'percentile_description_column_1': [1, 2, 3, 4, 5, 6],
+            'percentile_description_column_2': [16, 13, 14, 11, 15, 12],
         })
         cluster_columns = ['categorical_column_cluster_median']
         df_returned = self.data_handler.fill_missing_values_training_data(cluster_columns)
@@ -201,31 +218,58 @@ class DataHandlerTest(unittest.TestCase):
         pd.testing.assert_frame_equal(filled_test_data_expected,filled_test_data_returned)
 
     def test_generate_percentile_values(self):
-        self.data_handler._generate_percentile_values()
-        dict_returned = self.data_handler.percentile_category_values_dict
+        dict_returned = self.data_handler._generate_percentile_values(percentile_data=self.raw_data)
         dict_expected = {
-        'percentile_description_column': {'Below Q20': 2, 'Between Q20 and Q60': 4, 'Above Q60': 4.0}
+        'percentile_description_column_1': {'Below Q20': 2, 'Between Q20 and Q60': 4, 'Above Q60': 4.0},
+        'percentile_description_column_2': {'Below Q20': 12, 'Between Q20 and Q60': 14, 'Above Q60': 14.0}
         }
         self.assertEqual(dict_expected, dict_returned)
 
     def test_generate_percentile_categories(self):
-        dict_returned = self.data_handler.generate_percentile_categories(key_column='percentile_category')
+        handler_data_returned = self.data_handler.generate_percentile_categories(
+            percentile_data=self.raw_data, key_column='percentile_category'
+        )
         dict_expected = {
-            'store_perc_category_percentile_description_column': {
+            'store_perc_category_percentile_description_column_1': {
                 '1': 'Below Q20', '2': 'Below Q20', '3': 'Between Q20 and Q60',
-                '4': 'Between Q20 and Q60', '5': 'Above Q60', '6': 'Above Q60'
-        }}
-        self.assertEqual(dict_expected, dict_returned)
+                '4': 'Between Q20 and Q60', '5': 'Above Q60', '6': 'Above Q60'},
+            'store_perc_category_percentile_description_column_2': {
+                '1': 'Above Q60', '2': 'Between Q20 and Q60', '3': 'Between Q20 and Q60',
+                '4': 'Below Q20', '5': 'Above Q60', '6': 'Below Q20'}
+        }
+        df_expected = pd.DataFrame({
+            'categorical_column_1': ['type_1', 'type_2', 'type_3', 'type_4', 'type_5', np.nan],
+            'categorical_column_2': ['type_1', 'type_2', 'type_3', 'type_4', 'type_5', np.nan],
+            'numerical_column_normal_median_1': [1, 2, 3, 4, 5, np.nan],
+            'numerical_column_normal_median_2': [6, 7, 8, 9, 10, np.nan],
+            'categorical_column_cluster_median': ['1', '1', '1', '2', '2', '2'],
+            'numerical_column_cluster_median': [2, 4, np.nan, 10, 12, np.nan],
+            'percentile_category': ['1', '2', '3', '4', '5', '6'],
+            'percentile_description_column_1': [1, 2, 3, 4, 5, 6],
+            'percentile_description_column_2': [16, 13, 14, 11, 15, 12],
+            'store_perc_category_percentile_description_column_1': [
+                'Below Q20', 'Below Q20', 'Between Q20 and Q60', 'Between Q20 and Q60', 'Above Q60', 'Above Q60'],
+            'store_perc_category_percentile_description_column_2': [
+                'Above Q60', 'Between Q20 and Q60', 'Between Q20 and Q60', 'Below Q20', 'Above Q60', 'Below Q20'],
+        })
+        self.assertEqual(dict_expected, self.data_handler.categories_percentile_dict)
+        pd.testing.assert_frame_equal(handler_data_returned, df_expected)
 
     def test_map_percentile_categories_unseen_data(self):
-        self.data_handler.generate_percentile_categories(key_column='percentile_category')
+        self.data_handler.generate_percentile_categories(
+            percentile_data=self.raw_data,
+            key_column='percentile_category')
         unseen_data = pd.DataFrame({'percentile_category': ['1', '2', '3', '4', '5', '6', '7']})
         df_returned = \
             self.data_handler.map_percentile_categories_unseen_data(unseen_data, key_column='percentile_category')
         expected_data = pd.DataFrame({
             'percentile_category': ['1', '2', '3', '4', '5', '6', '7'],
-            'store_perc_category_percentile_description_column': [
+            'store_perc_category_percentile_description_column_1': [
                 'Below Q20', 'Below Q20', 'Between Q20 and Q60', 'Between Q20 and Q60',
-                'Above Q60',  'Above Q60', np.nan]
+                'Above Q60',  'Above Q60', np.nan],
+            'store_perc_category_percentile_description_column_2': [
+                'Above Q60', 'Between Q20 and Q60', 'Between Q20 and Q60', 'Below Q20',
+                'Above Q60', 'Below Q20', np.nan],
+
         })
         pd.testing.assert_frame_equal(expected_data, df_returned)
